@@ -1,6 +1,7 @@
 from flask import Blueprint, redirect, request, session, url_for
 from spotipy import Spotify
 from .auth import sp_oauth
+# from .spotify_utils import get_all_playlist_tracks, classify_tracks
 from .spotify_utils import get_all_playlist_tracks
 
 main = Blueprint('main', __name__)
@@ -44,15 +45,25 @@ def show_playlist_songs(playlist_id):
         return redirect(sp_oauth.get_authorize_url())
 
     sp = Spotify(auth=token_info['access_token'])
-    songs = get_all_playlist_tracks(sp, playlist_id)  # returns list of "Song by Artist"
+    songs = get_all_playlist_tracks(sp, playlist_id)
 
+    track_ids = [song['url'].split('/')[-1] for song in songs]
+    track_names = [song['name'] for song in songs]
+    
+    # classified_tracks = classify_tracks(sp, track_ids, track_names)
+    
     html = f'<h2>Songs in Playlist</h2><ul>'
     if not songs:
         html += '<li>No songs found in this playlist.</li>'
     else:
-        for song in songs:
+        for i, song in enumerate(songs):
+            classification = ''
+            # if i < len(classified_tracks):
+            #     c = classified_tracks[i]
+            #     classification = f" - Mood: {c['mood']}, Tempo: {c['tempo']}"
             html += (f'<li>{song["name"]} by {song["artists"]} '
-                     f'- <a href="{song["url"]}" target="_blank" rel="noopener noreferrer">Listen</a></li>')
+                     f'- <a href="{song["url"]}" target="_blank" rel="noopener noreferrer">Listen</a>'
+                     f'{classification}</li>')
     html += '</ul>'
 
     return html
