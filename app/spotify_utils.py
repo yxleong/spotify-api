@@ -23,27 +23,29 @@ def get_all_playlist_tracks(sp: Spotify, playlist_id: str):
     return track_list
 
 
-def classify_tracks(sp, track_ids: list, track_names: list):
-    def chunks(lst, size):
-        for i in range(0, len(lst), size):
-            yield lst[i:i + size]
+# def classify_tracks(sp, track_ids: list, track_names: list):
+#     def chunks(lst, size):
+#         for i in range(0, len(lst), size):
+#             yield lst[i:i + size]
 
-    classified = []
-    for id_chunk, name_chunk in zip(chunks(track_ids, 100), chunks(track_names, 100)):
-        features = sp.audio_features(id_chunk)
+#     classified = []
+#     for id_chunk, name_chunk in zip(chunks(track_ids, 100), chunks(track_names, 100)):
+#         features = sp.audio_features(id_chunk)
 
-        for i, f in enumerate(features):
-            if not f:
-                continue  # skip missing data
-            mood = 'Happy' if f['valence'] > 0.6 else 'Sad' if f['valence'] < 0.4 else 'Neutral'
-            tempo = 'Fast' if f['tempo'] > 120 else 'Slow'
+#         for i, f in enumerate(features):
+#             if not f:
+#                 continue  # skip missing data
+#             mood = 'Happy' if f['valence'] > 0.6 else 'Sad' if f['valence'] < 0.4 else 'Neutral'
+#             tempo = 'Fast' if f['tempo'] > 120 else 'Slow'
 
-            classified.append({
-                'name': name_chunk[i],
-                'mood': mood,
-                'tempo': tempo,
-                'valence': f['valence'],
-                'tempo_value': f['tempo']
-            })
+#             classified.append({
+#                 'name': name_chunk[i],
+#                 'mood': mood,
+#                 'tempo': tempo,
+#                 'valence': f['valence'],
+#                 'tempo_value': f['tempo']
+#             })
 
-    return classified
+#     return classified
+
+# testing
