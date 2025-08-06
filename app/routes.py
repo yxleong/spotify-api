@@ -1,4 +1,4 @@
-from flask import Blueprint, redirect, request, session, url_for
+from flask import Blueprint, redirect, request, session, url_for, render_template_string
 from spotipy import Spotify
 from .auth import sp_oauth
 # from .spotify_utils import get_all_playlist_tracks, classify_tracks
@@ -8,14 +8,38 @@ main = Blueprint('main', __name__)
 
 @main.route('/')
 def home():
-    if not sp_oauth.validate_token(sp_oauth.cache_handler.get_cached_token()):
+    token_info = sp_oauth.cache_handler.get_cached_token()
+    if not sp_oauth.validate_token(token_info):
         return redirect(sp_oauth.get_authorize_url())
-    return redirect(url_for('.get_playlists'))
+    auth_url = sp_oauth.get_authorize_url()
+    # return redirect(url_for('.get_playlists'))
+    return render_template_string("""
+        <h2>Login</h2>
+        <p><a href="{{ auth_url }}">Login with Spotify</a></p>
+    """, auth_url=auth_url)
+
 
 @main.route('/callback')
 def callback():
+    error = request.args.get('error')
+    if error:
+        return render_template_string("""
+            <h2>Authorization Failed</h2>
+            <p>You cancelled the Spotify authorization or an error occurred: {{ error }}</p>
+            <p><a href="{{ url_for('main.home') }}">Try to log in again</a></p>
+        """, error=error)
+    
+    code = request.args.get('code')
+    if not code:
+        return render_template_string("""
+            <h2>Authorization Error</h2>
+            <p>Missing authorization code. Please try logging in again.</p>
+            <p><a href="{{ url_for('main.home') }}">Login</a></p>
+        """)
+    
     sp_oauth.get_access_token(request.args['code'])
     return redirect(url_for('.get_playlists'))
+
 
 @main.route('/get_playlists')
 def get_playlists():
@@ -34,6 +58,7 @@ def get_playlists():
     for name, pid in playlists_info:
         playlist_html += f'<li>{name} - <a href="/playlist/{pid}">View Songs</a></li>'
     playlist_html += '</ul>'
+    playlist_html += f"<p><a href='/logout'>Logout</a></p>"
 
     return playlist_html
 
@@ -65,6 +90,7 @@ def show_playlist_songs(playlist_id):
                      f'- <a href="{song["url"]}" target="_blank" rel="noopener noreferrer">Listen</a>'
                      f'{classification}</li>')
     html += '</ul>'
+    html += f"<p><a href='/logout'>Logout</a></p>"
 
     return html
 
@@ -72,4 +98,5 @@ def show_playlist_songs(playlist_id):
 @main.route('/logout')
 def logout():
     session.clear()
-    return redirect(url_for('home'))
+    session.modified = True
+    return redirect(url_for('main.home'))

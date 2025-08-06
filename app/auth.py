@@ -11,6 +11,6 @@ def setup_spotify_oauth(app):
         client_secret=app.config['CLIENT_SECRET'],
         redirect_uri=app.config['REDIRECT_URI'],
         scope=app.config['SCOPE'],
-        cache_handler=FlaskSessionCacheHandler(session)
-         # show_dialog = True
+        cache_handler=FlaskSessionCacheHandler(session),
+        show_dialog = True
     )
