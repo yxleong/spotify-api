@@ -3,7 +3,6 @@ from spotipy import Spotify
 from .auth import sp_oauth
 
 main = Blueprint('main', __name__)
-sp = Spotify(auth_manager=sp_oauth)
 
 @main.route('/')
 def home():
