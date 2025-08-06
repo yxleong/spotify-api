@@ -1,6 +1,7 @@
 from flask import Blueprint, redirect, request, session, url_for
 from spotipy import Spotify
 from .auth import sp_oauth
+from .spotify_utils import get_all_playlist_tracks
 
 main = Blueprint('main', __name__)
 
@@ -24,8 +25,37 @@ def get_playlists():
 
     sp = Spotify(auth=token_info['access_token'])
     playlists = sp.current_user_playlists()
-    info = [f"{pl['name']}: {pl['external_urls']['spotify']}" for pl in playlists['items']]
-    return '<br>'.join(info)
+    # info = [f"{pl['name']}: {pl['external_urls']['spotify']}" for pl in playlists['items']]
+    # return '<br>'.join(info)
+    
+    playlists_info = [(pl['name'], pl['id']) for pl in playlists['items']]
+    playlist_html = '<h2>Your Playlists</h2><ul>'
+    for name, pid in playlists_info:
+        playlist_html += f'<li>{name} - <a href="/playlist/{pid}">View Songs</a></li>'
+    playlist_html += '</ul>'
+
+    return playlist_html
+
+
+@main.route('/playlist/<playlist_id>')
+def show_playlist_songs(playlist_id):
+    token_info = sp_oauth.cache_handler.get_cached_token()
+    if not sp_oauth.validate_token(token_info):
+        return redirect(sp_oauth.get_authorize_url())
+
+    sp = Spotify(auth=token_info['access_token'])
+    songs = get_all_playlist_tracks(sp, playlist_id)  # returns list of "Song by Artist"
+
+    html = f'<h2>Songs in Playlist</h2><ul>'
+    if not songs:
+        html += '<li>No songs found in this playlist.</li>'
+    else:
+        for song in songs:
+            html += f'<li>{song}</li>'
+    html += '</ul>'
+
+    return html
+
 
 @main.route('/logout')
 def logout():
