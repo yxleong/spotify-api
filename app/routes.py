@@ -51,7 +51,8 @@ def show_playlist_songs(playlist_id):
         html += '<li>No songs found in this playlist.</li>'
     else:
         for song in songs:
-            html += f'<li>{song}</li>'
+            html += (f'<li>{song["name"]} by {song["artists"]} '
+                     f'- <a href="{song["url"]}" target="_blank" rel="noopener noreferrer">Listen</a></li>')
     html += '</ul>'
 
     return html
