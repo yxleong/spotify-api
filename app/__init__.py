@@ -28,19 +28,6 @@ def create_app():
 
         session['last_active'] = now.isoformat()
 
-    # @app.before_request
-    # def session_timeout():
-    #     now = datetime.utcnow()
-    #     last_active = session.get('last_active')
-
-    #     if last_active:
-    #         last_active = datetime.fromisoformat(last_active)
-    #         if now - last_active > SESSION_TIMEOUT:
-    #             session.clear()  # timeout reached, logout
-    #             return redirect(url_for('main.home'))  # redirect to home or login page
-        
-    #     session['last_active'] = now.isoformat()
-
     Session(app)  # Tokens hidden from client, large session data supported, safer and scalable
     setup_spotify_oauth(app)
 
