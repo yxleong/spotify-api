@@ -5,7 +5,6 @@ from .auth import sp_oauth
 from .spotify_utils import get_all_playlist_tracks
 
 main = Blueprint('main', __name__)
-main.register_blueprint(reccobeats_bp)
 
 @main.route('/')
 def home():
